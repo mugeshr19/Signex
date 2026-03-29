@@ -22,6 +22,11 @@ const otpSchema = new mongoose.Schema({
     verified: {
         type: Boolean,
         default: false
+    },
+    attempts: {
+        type: Number,
+        default: 0,   
+        max: 3        
     }
 });
 

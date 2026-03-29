@@ -32,9 +32,22 @@ exports.verifyOtp = async(req,res)=>{
         if(!record){
             return res.status(400).json({ message: 'Invalid OTP' });
         }
+        if (record.attempts >= 3) {
+            await Otp.deleteOne({ _id: record._id });
+            return res.status(400).json({ message: 'Too many wrong attempts, please request a new OTP' });
+        }
         if (record.expires < new Date()) {
             await otp.deleteOne({ _id: record._id });
             return res.status(400).json({ message: 'OTP expired' });
+        }
+        if (record.code !== code) {
+            record.attempts += 1;
+            await record.save();
+ 
+            const remainingAttempts = 3 - record.attempts;
+            return res.status(400).json({
+                message: `Invalid OTP. ${remainingAttempts} attempt${remainingAttempts === 1 ? '' : 's'} remaining`
+            });
         }
 
         await otp.deleteOne({_id: record._id});
