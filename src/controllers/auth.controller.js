@@ -1,6 +1,7 @@
 const Business = require("../models/business.model.js");
 const generateApiKey = require("../utils/generateApiKey.js");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 exports.register = async (req, res) => {
   try {
@@ -22,9 +23,9 @@ exports.register = async (req, res) => {
     const token =jwt.sign(
       {id: business._id,email:business.email},
       process.env.JWT_SECRET,
-      {expireIn:"7d"}
+      {expiresIn:"7d"}
     );
-    res.cookies("token",token,{
+    res.cookie("token",token,{
       httpOnly:true,
       secure: false,
       sameSite: "Strict",
@@ -44,7 +45,7 @@ exports.login = async(req,res)=>{
     const {email,password} = req.body;
     const business = await Business.findOne({email});
     if(!business){
-      return res.status(401).json({message: "Invalid credentials"} );
+      return res.status(404).json({message: "Invalid credentials"} );
     }
     const isMatch = await bcrypt.compare(password,business.password);
     if(!isMatch){
@@ -55,7 +56,7 @@ exports.login = async(req,res)=>{
       process.env.JWT_SECRET,
       {expiresIn:"7d"}
     );
-    res.cookies("token",token,{
+    res.cookie("token",token,{
       httpOnly:true,
       secure:false,
       sameSite:"strict",
@@ -70,4 +71,34 @@ exports.login = async(req,res)=>{
 exports.logout = (req, res) => {
   res.clearCookie("token");
   res.json({ message: "Logged out successfully" });
+};
+
+exports.getme = async(req,res)=>{
+  try{
+    const business = await Business.findById(req.businessId).select("-password");
+    if(!business){
+      res.status(404).json({message:"Business not found"});
+    }
+    res.status(201).json({business});
+  }
+  catch(err){
+    res.status(404).json({message:"Internal error"});
+  }
+
+};
+
+exports.rotateapi = async(req,res)=>{
+  try{
+    const business = await Business.findById(req.businessId);
+    if(!business){
+      res.status(404).json({message:"Business not found"}); 
+    }
+    const newApiKey = generateApiKey();
+    business.apiKey = newApiKey;
+    await business.save();
+    res.status(200).json({message:"API key rotated successfully",newApiKey});
+  }
+  catch(err){
+    res.status(500).json({message:"Internal server error", error: err.message});
+  }
 };
