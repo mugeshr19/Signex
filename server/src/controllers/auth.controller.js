@@ -62,7 +62,12 @@ exports.login = async(req,res)=>{
       sameSite:"strict",
       maxAge: 7*24*60*60*1000,
     });
-    res.status(201).json({message: "Login successful"});
+    res.status(200).json({
+      message: "Login successful",
+      business: {
+        id: business._id,
+        name: business.name,
+        email: business.email,apiKey: business.apiKey , createdAt: business.createdAt}});
   }catch(err){
     res.status(500).json({message: "Internal server error"});
   }
@@ -97,6 +102,18 @@ exports.rotateapi = async(req,res)=>{
     business.apiKey = newApiKey;
     await business.save();
     res.status(200).json({message:"API key rotated successfully",newApiKey});
+  }
+  catch(err){
+    res.status(500).json({message:"Internal server error", error: err.message});
+  }
+};
+
+exports.savewebhook = async(req,res)=>{
+  try{
+    const { webhook } = req.body; 
+    if (!webhook) return res.status(400).json({ message: "Webhook URL is required" });
+    await Business.findByIdAndUpdate(req.businessId, { webhook });
+    res.status(200).json({ message: "Webhook saved successfully" });
   }
   catch(err){
     res.status(500).json({message:"Internal server error", error: err.message});

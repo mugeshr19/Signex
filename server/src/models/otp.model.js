@@ -6,10 +6,14 @@ const otpSchema = new mongoose.Schema({
         ref: 'Business',
         required: true
     },
-    email:{
+    channel: {
         type: String,
-        required: true,
-        unique: true
+        enum: ['email', 'sms'],
+        required: true
+    },
+    target: {
+        type: String,
+        required: true
     },
     code:{
         type: String,

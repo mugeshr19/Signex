@@ -13,11 +13,14 @@ const businessSchema = new mongoose.Schema({
     password:{
         type: String,
         required: true,
-        unique: true
     },
     apiKey:{
         type: String,
         unique: true
+    },
+    webhook:{
+        type: String,
+        default: null
     }
 },{
     timestamps: true
