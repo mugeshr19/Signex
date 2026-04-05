@@ -1,0 +1,14 @@
+{
+  "name": "signex",
+  "version": "1.0.0",
+  "description": "OTP as a Service SDK",
+  "main": "index.js",
+  "scripts": {
+    "test": "mugeshr19"
+  },
+  "author": "mugesh",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}
